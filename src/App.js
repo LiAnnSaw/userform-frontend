@@ -46,7 +46,7 @@ function App() {
           value={form.name}
           onChange={handleChange}
           required
-        />
+        /><br></br>
         <input
           name="email"
           type="email"
@@ -54,7 +54,7 @@ function App() {
           value={form.email}
           onChange={handleChange}
           required
-        />
+        /><br></br>
         <button type="submit">Submit</button>
       </form>
 
