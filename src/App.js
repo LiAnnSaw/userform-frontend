@@ -5,10 +5,20 @@ function App() {
   const [submissions, setSubmissions] = useState([]);
   const [form, setForm] = useState({ name: '', email: '' });
 
+  // Automatically switch between local and Render
+  const backendUrl =
+    window.location.hostname === 'localhost'
+      ? 'http://localhost:8080'
+      : 'https://userform-backend.onrender.com';
+
   const fetchSubmissions = async () => {
-    const response = await fetch('http://localhost:8080/api/submissions');
-    const data = await response.json();
-    setSubmissions(data);
+    try {
+      const response = await fetch(`${backendUrl}/api/submissions`);
+      const data = await response.json();
+      setSubmissions(data);
+    } catch (error) {
+      console.error('Failed to fetch submissions:', error);
+    }
   };
 
   const handleChange = (e) => {
@@ -17,18 +27,22 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    try {
+      const response = await fetch(`${backendUrl}/api/submissions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
 
-    const response = await fetch('http://localhost:8080/api/submissions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-
-    if (response.ok) {
-      setForm({ name: '', email: '' });
-      fetchSubmissions();
-    } else {
-      alert('Submission failed.');
+      if (response.ok) {
+        setForm({ name: '', email: '' });
+        fetchSubmissions();
+      } else {
+        alert('Submission failed.');
+      }
+    } catch (error) {
+      alert('Error submitting form.');
+      console.error(error);
     }
   };
 
@@ -46,7 +60,7 @@ function App() {
           value={form.name}
           onChange={handleChange}
           required
-        /><br></br>
+        /><br />
         <input
           name="email"
           type="email"
@@ -54,7 +68,7 @@ function App() {
           value={form.email}
           onChange={handleChange}
           required
-        /><br></br>
+        /><br />
         <button type="submit">Submit</button>
       </form>
 
