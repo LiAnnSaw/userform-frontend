@@ -5,21 +5,26 @@ function App() {
   const [submissions, setSubmissions] = useState([]);
   const [form, setForm] = useState({ name: '', email: '' });
 
-  // Automatically switch between local and Render
+  //Dynamically use local or deployed backend
   const backendUrl =
     window.location.hostname === 'localhost'
       ? 'http://localhost:8080'
       : 'https://userform-backend.onrender.com';
 
-  const fetchSubmissions = async () => {
-    try {
-      const response = await fetch(`${backendUrl}/api/submissions`);
-      const data = await response.json();
-      setSubmissions(data);
-    } catch (error) {
-      console.error('Failed to fetch submissions:', error);
-    }
-  };
+  //React Hook - run once when component mounts
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      try {
+        const response = await fetch(`${backendUrl}/api/submissions`);
+        const data = await response.json();
+        setSubmissions(data);
+      } catch (error) {
+        console.error('Failed to fetch submissions:', error);
+      }
+    };
+
+    fetchSubmissions();
+  }, [backendUrl]); // Add backendUrl to avoid eslint warning
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -36,7 +41,11 @@ function App() {
 
       if (response.ok) {
         setForm({ name: '', email: '' });
-        fetchSubmissions();
+
+        // Refresh the submissions list
+        const updated = await fetch(`${backendUrl}/api/submissions`);
+        const data = await updated.json();
+        setSubmissions(data);
       } else {
         alert('Submission failed.');
       }
@@ -45,10 +54,6 @@ function App() {
       console.error(error);
     }
   };
-
-  useEffect(() => {
-    fetchSubmissions();
-  }, []);
 
   return (
     <div style={{ padding: '2rem' }}>
